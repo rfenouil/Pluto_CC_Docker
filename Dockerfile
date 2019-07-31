@@ -19,13 +19,10 @@
 #
 
 
-
 #### Define global ARGs accessible by all stages of multi-stage build
 
 ARG VERSION_XILINX_SDK=2018.2
 ARG DIR_XILINX_SDK=/opt/Xilinx
-
-
 
 
 
@@ -37,7 +34,6 @@ FROM ubuntu:18.04 as SDK_INSTALL
 # Expected ARGs
 ARG VERSION_XILINX_SDK
 ARG DIR_XILINX_SDK
-
 
 
 #### Install required Vivado Design suite and SDK
@@ -54,10 +50,9 @@ ADD Xilinx_Vivado_SDK_*.tar.gz /externalFiles/Xilinx/
 # Run the installer in batch mode
 RUN /externalFiles/Xilinx/Xilinx_Vivado_SDK_${VERSION_XILINX_SDK}_*/xsetup -b Install -e "Vivado HL WebPACK" -l ${DIR_XILINX_SDK} --agree XilinxEULA,3rdPartyEULA,WebTalkTerms 
 
-# Remove the SDK installation files (should not really help because layers are stored anyway, multi-stage build might help however)
+# Remove the SDK installation files (should not really help because layers are
+# stored anyway but multi-stage build allows to remove this intermediate image)
 RUN rm -rf /externalFiles
-
-
 
 
 
@@ -73,7 +68,6 @@ ARG DIR_XILINX_SDK
 
 # Copy result of SDK installation from previous stage
 COPY --from=SDK_INSTALL ${DIR_XILINX_SDK} ${DIR_XILINX_SDK}
-
 
 
 #### Install apt dependencies
@@ -100,7 +94,6 @@ RUN apt-get update \
                           wget
                     
 
-
 #### Clone main Pluto FW repository
 # Includes appropriate branches from git-submodules:
 #  - Linux Kernel
@@ -113,7 +106,6 @@ ENV DIR_PLUTO_FW_SOURCE /repos/plutosdr-fw
 RUN git clone --recursive https://github.com/analogdevicesinc/plutosdr-fw.git ${DIR_PLUTO_FW_SOURCE}
 
 
-
 #### Set environment variables for build
 
 ENV CROSS_COMPILE=arm-linux-gnueabihf-
@@ -121,10 +113,7 @@ ENV PATH="${PATH}:${DIR_XILINX_SDK}/SDK/${VERSION_XILINX_SDK}/gnu/aarch32/lin/gc
 ENV VIVADO_SETTINGS=${DIR_XILINX_SDK}/Vivado/${VERSION_XILINX_SDK}/settings64.sh
 
 
-
 #### Build firmware
 
 RUN cd ${DIR_PLUTO_FW_SOURCE} && make -j 30
-
-
 
