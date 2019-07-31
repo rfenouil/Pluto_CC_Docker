@@ -57,7 +57,7 @@ RUN rm -rf /externalFiles
 
 
 
-#### Create the image based on SDK stage (not storing the heavy ADD layer)
+#### Second stage (final): create the image based on installed SDK
 
 FROM ubuntu:18.04
 MAINTAINER Romain Fenouil <rfenouil@gmail.com>
@@ -102,7 +102,6 @@ RUN apt-get update \
 #  - u-boot Bootloader
 
 ENV DIR_PLUTO_FW_SOURCE /repos/plutosdr-fw
-
 RUN git clone --recursive https://github.com/analogdevicesinc/plutosdr-fw.git ${DIR_PLUTO_FW_SOURCE}
 
 
