@@ -114,5 +114,5 @@ ENV VIVADO_SETTINGS=${DIR_XILINX_SDK}/Vivado/${VERSION_XILINX_SDK}/settings64.sh
 
 #### Build firmware
 
-RUN cd ${DIR_PLUTO_FW_SOURCE} && make -j 30
+RUN cd ${DIR_PLUTO_FW_SOURCE} && make
 
