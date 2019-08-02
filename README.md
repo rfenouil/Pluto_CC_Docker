@@ -1,7 +1,9 @@
 # Pluto_CC_Docker
-A docker environment for PlutoSDR firmware build and cross compilation + tools &amp; scripts
 
-This repository gives instructions on how to build a (docker) environment for (cross-)compiling PlutoSDR firmware and tools.
+This repository gives instructions to build a (docker) environment for (cross-)compiling PlutoSDR firmware and tools.
+
+It is based on instructions provided by Analog Devices (AD) [here](https://wiki.analog.com/university/tools/pluto/building_the_image).  
+Thank you to [Lama_Bleu](https://twitter.com/fonera_cork) for his work and support, and [unixpunk](https://github.com/unixpunk) for having started it all with [PlutoWeb](https://github.com/unixpunk/PlutoWeb).
 
 __!!! WORK IN PROGRESS !!!__  
 In current state, the `docker build` command will install everything required for plutSDR firmware compilation and compile it.
@@ -10,8 +12,6 @@ No cross compilation or anything else tested yet.
 
 Limitations
 -----------
-
-It is based on instructions provided by Analog Devices (AD) [here](https://wiki.analog.com/university/tools/pluto/building_the_image).
 
 In theory, having a docker environment setup is nice because:
  - you can directly share the binary image with others, or use it on different machines
@@ -77,8 +77,7 @@ This Dockerfile uses a multi-stage build to:
  - stage 1: import SDK 'tar.gz' archive, extract it, and install SDK
  - stage 2: install other dependencies and compile firmware
 
-The first stage build generates a huge (~48GB) intermediate image from which only the required folders are copied to second stage.  
-Once the build is done, it is recommended to delete the intermediate image in order to recover some disk space (using `docker rmi -f ImAgE_Id` command).  
+The first stage build generates a huge (~48GB) intermediate image from which only the required folders are copied to second stage. Once the build is done, it is recommended to delete the intermediate image in order to recover some disk space (using `docker rmi -f ImAgE_Id` command).  
 
 
 #### Alternative method for creating docker image
@@ -116,8 +115,8 @@ A firmware with default configuration is compiled during the docker image build.
 
 It includes everything you need for flashing your device (frm/dfu files), and more...
 
-The `docker cp` command is a convenient way to extract the compiled firmware files to host filesystem.  
-In the host shell (__not__ from container): `docker cp myCustomFW:/repos/plutosdr-fw/build/pluto.frm ./`
+The `docker cp` command is a convenient way to extract the compiled firmware files to host filesystem. In the host shell (__not__ from container):  
+`docker cp myCustomFW:/repos/plutosdr-fw/build/pluto.frm ./`
 
 Then you just need to copy that in the pluto share, eject the USB device, and it is flashing already :)
 
@@ -130,6 +129,7 @@ You can customize it before compilation to include or remove packages, change op
 In the following example, we add 'Python3' package to the distribution.
 
 In the container instance:
+
 ```
  # Set current directory to buildroot submodule
  cd /repos/plutosdr-fw/buildroot/
@@ -139,7 +139,7 @@ In the container instance:
  
  # Start customization
  make menuconfig
-``` 
+```
 
 In the menu appearing, change the desired options using arrows, enter, 'y' and 'n' keys.  
 The package 'Python3' is located in: `> Target packages > Interpreter languages and scripting`  
@@ -175,9 +175,8 @@ It is therefore useless to add all packages in your firmware, you will not be ab
 
 While you keep playing with customization, you might use `make menuconfig` command again, and unselect 'Python3' to free some space.
 As seen before, the new configuration is saved to `.config` and you copy it over the `configs/zynq_pluto_defconfig` file.
-If you restart the firmware compilation after that, you might be surprised... The firmware is as big as before, and still contains 'Python3'' (you can flash it to check)...  
-It is important to clean the build when you remove some package from configuration, otherwise the previously-compiled files will be added anyway.  
-Use the command: `make clean` from the buildroot folder before compiling the firmware again.
+If you restart the firmware compilation after that, you might be surprised... The firmware is as big as before, and still contains 'Python3'' (you can flash it to check).  
+It is important to clean the build when you remove some package from configuration, otherwise the previously-compiled files will be added anyway. Use the command `make clean` from the buildroot folder before compiling the firmware again.
 
 In the same concern however, because cleaning the build removes every file generated during compilation, the next `make` command will take much longer to regenerate all binaries (selected packages, but also the buildroot core).  
 In this case, it might be more convenient to exit from the current container and restart another one from the same docker image. It contains the firmware build with default options (nothing added) generated when the docker image was being built. That can save you some time...  
