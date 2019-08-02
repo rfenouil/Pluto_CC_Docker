@@ -184,18 +184,56 @@ It does not help if you want to remove things included in the default configurat
 
 #### PACKAGES NOTES
 
-##### python3
-Location: `> Target packages > Interpreter languages and scripting`  
-Adds to FW size: ~7MB (no module)
+##### cifs-utils (mount windows share)  
+Location: `> Target packages > Filesystem and flash utilities`  
+Size: <0.1MB
 
-##### python-pip (python3)
+##### exfat-utils + exfat-fuse (exFAT partitions)  
+Location: `> Target packages > Filesystem and flash utilities`  
+Size: ~0.2MB
+
+##### gnuplot  
+Location: `> Target packages > Graphic libraries and applications (graphic/text)`  
+Size: ~0.5MB
+
+##### lftp (ftp client)  
+Location: `> Target packages > Networking applications`  
+Size: ~2.1MB (including sftp support)
+
+##### python3  
+Location: `> Target packages > Interpreter languages and scripting`  
+Size: ~7.1MB (no module)
+
+##### python-pip (python3)  
 Location: `> Target packages > Interpreter languages and scripting > External python modules`  
-Adds to FW size: ~3.2MB (including `ssl`)  
+Size: ~3.2MB (including `ssl`)  
 Should require module `ssl` in `> Target packages > Interpreter languages and scripting > core python3 modules` to work properly.
 
-##### tmux
+##### rsync  
+Location: `> Target packages > Networking applications`  
+Size: ~0.2MB  
+
+##### shellinabox TODO: FIXME 
+Location: `> Target packages > Networking applications`  
+Size: ~0.1MB  
+Reports problems with SSL (eventually bypassed using `--disable-ssl` in a non-secure setup), and other errors related to `closeAllFds()` and `newSessionKey()`...
+
+##### socat  
+Location: `> Target packages > Networking applications`  
+Size: ~0.2MB  
+
+##### sox TODO: FIXME 
+Location: `> Target packages > Audio and video applications`  
+Size: ~0.25MB (including locale)  
+Requires to set `Stack Smashing Protection`, it is supported by toolchain and one can enable it from `> Build options` BUT associated libs are not included in buildroot.  
+Another option is to modify `sox` package to use `--disable-stack-protector` flag during compilation as suggested [here](http://lists.busybox.net/pipermail/buildroot/2016-March/154488.html).  
+Working (and best) option is to lie by disabling `Toolchain has SSP support?` in `> Toolchain`. The `--disable-stack-protector` flag activation in sox package is based on this parameter (`BR2_TOOLCHAIN_HAS_SSP`, see `package/sox/sox.mk`). `SSP` is not desirable anyway: it increases size of executables and security is not a concern at all here.
+
+Now complains about libgomp: `sox: error while loading shared libraries: libgomp.so.1: cannot open shared object file: No such file or directory`. Even though flag `--disable-gomp` is added by default in sox package configuration...
+
+##### tmux  
 Location: `> Target packages > Shell and utilities`  
-Adds to FW size: ~1.3MB (including locale)  
+Size: ~1.3MB (including locale)  
 Requires to replace `en_US` by `en_US.UTF-8` in `> System configuration > Locales to keep` and add `en_US.UTF-8` to  `> System configuration > Generate locale data`.
 
 
