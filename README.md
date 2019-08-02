@@ -25,7 +25,6 @@ I provide instructions on how to create and use your own docker image but I cann
 Hope it helps anyway.
 
 
-
 Setup container: instructions
 -----------------------------
 
@@ -68,10 +67,7 @@ Just run: `docker build ./YoUrFoLdEr -t rfenouil/pluto_env_0.31`
 It can take between 1 and 2 hours to complete.
 
 
-
-### SIDE NOTES AND COMMANDS
-
-#### Delete (huge) intermediate image
+#### NOTE: Delete (huge) intermediate image
 
 This Dockerfile uses a multi-stage build to:
  - stage 1: import SDK 'tar.gz' archive, extract it, and install SDK
@@ -80,7 +76,7 @@ This Dockerfile uses a multi-stage build to:
 The first stage build generates a huge (~48GB) intermediate image from which only the required folders are copied to second stage. Once the build is done, it is recommended to delete the intermediate image in order to recover some disk space (using `docker rmi -f ImAgE_Id` command).  
 
 
-#### Alternative method for creating docker image
+#### NOTE: Alternative method for creating docker image
 
 While provided instructions is the easiest option for creating the docker image, an alternative method can be used to generate a similar image with a smaller footprint in 'Docker storage folder' (see point 1 above) during the creation process (final image size is identical).   
 
@@ -126,7 +122,7 @@ Then you just need to copy that in the pluto share, eject the USB device, and it
 Pluto firmware is based on the 'buildroot' linux distribution.
 You can customize it before compilation to include or remove packages, change options, etc...
 
-In the following example, we add 'Python3' package to the distribution.
+In the following example, we add 'python3' package to the distribution.
 
 In the container instance:
 
@@ -142,7 +138,7 @@ In the container instance:
 ```
 
 In the menu appearing, change the desired options using arrows, enter, 'y' and 'n' keys.  
-The package 'Python3' is located in: `> Target packages > Interpreter languages and scripting`  
+The package 'python3' is located in: `> Target packages > Interpreter languages and scripting`  
 Highlight it and press 'y'. You can also select python-specific modules (pip, numpy, ...) in submenus appearing below if you want.
 
 Then, exit from menus until you quit the configuration program, it will save the updated configuration in the text file: `.config`
@@ -165,25 +161,45 @@ Once done, you will find the new firmware files in: `/repos/plutosdr-fw/build`
 
 Ready for flashing (see `docker cp` command to extract it from the container) !
 
+
 #### NOTE: Firmware size 
 
-Adding 'Python3' (without any module) increased the firmware size (frm) from ~9 to ~17MB. It is important to know that the available space for flashing the firmware is limited.  
+Adding 'python3' (without any module) increased the firmware size (frm) from ~10 to ~17MB. It is important to know that the available space for flashing the firmware is limited.  
 Max firmware size depends on device, but most of them (including mine) cannot handle a firmware file larger than 22MB (unless you do some tricky hacks).
 It is therefore useless to add all packages in your firmware, you will not be able to flash it... Just pick the ones you need.
 
+
 #### NOTE: Removing packages
 
-While you keep playing with customization, you might use `make menuconfig` command again, and unselect 'Python3' to free some space.
+While you keep playing with customization, you might use `make menuconfig` command again, and unselect 'python3' to free some space.
 As seen before, the new configuration is saved to `.config` and you copy it over the `configs/zynq_pluto_defconfig` file.
 If you restart the firmware compilation after that, you might be surprised... The firmware is as big as before, and still contains 'Python3'' (you can flash it to check).  
 It is important to clean the build when you remove some package from configuration, otherwise the previously-compiled files will be added anyway. Use the command `make clean` from the buildroot folder before compiling the firmware again.
 
 In the same concern however, because cleaning the build removes every file generated during compilation, the next `make` command will take much longer to regenerate all binaries (selected packages, but also the buildroot core).  
-In this case, it might be more convenient to exit from the current container and restart another one from the same docker image. It contains the firmware build with default options (nothing added) generated when the docker image was being built. That can save you some time...  
+In this case, it might be more convenient to exit from the current container and restart another one from the same docker image. It contains the firmware build with default options (nothing added) generated when the docker image was being built. That can save you some time (if your container was named, you will have to delete it using `docker rm myCustomFW` before starting a new one with identical name)...  
 It might also be safer in case some package do not cleanup properly.  
 It does not help if you want to remove things included in the default configuration though...
 
-#### Other notes
+
+#### PACKAGES NOTES
+
+##### python3
+Location: `> Target packages > Interpreter languages and scripting`  
+Adds to FW size: ~7MB (no module)
+
+##### python-pip (python3)
+Location: `> Target packages > Interpreter languages and scripting > External python modules`  
+Adds to FW size: ~3.2MB (including `ssl`)  
+Should require module `ssl` in `> Target packages > Interpreter languages and scripting > core python3 modules` to work properly.
+
+##### tmux
+Location: `> Target packages > Shell and utilities`  
+Adds to FW size: ~1.3MB (including locale)  
+Requires to replace `en_US` by `en_US.UTF-8` in `> System configuration > Locales to keep` and add `en_US.UTF-8` to  `> System configuration > Generate locale data`.
+
+
+#### FINAL NOTES (buildroot)
 
 Buildroot documentation is great, go read it and report mistakes I make/write.
 
